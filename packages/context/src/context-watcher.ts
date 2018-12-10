@@ -12,6 +12,22 @@ import * as debugFactory from 'debug';
 const debug = debugFactory('loopback:context:watcher');
 
 /**
+ * Listeners of context bind/unbind events
+ */
+export interface ContextListener {
+  /**
+   * A filter function to match bindings
+   */
+  filter: BindingFilter;
+  /**
+   * Listen on `bind` or `unbind` and invalidate the cache
+   */
+  listen(
+    event: ContextEventType,
+    binding: Readonly<Binding<unknown>>,
+  ): ValueOrPromise<void>;
+}
+/**
  * Watching a given context chain to maintain a live list of matching bindings
  * and their resolved values within the context hierarchy.
  *
@@ -20,7 +36,7 @@ const debug = debugFactory('loopback:context:watcher');
  * they are added/removed/updated after the application starts.
  *
  */
-export class ContextWatcher<T = unknown> {
+export class ContextWatcher<T = unknown> implements ContextListener {
   protected _cachedBindings: Readonly<Binding<T>>[] | undefined;
   protected _cachedValues: ValueOrPromise<T[]> | undefined;
 

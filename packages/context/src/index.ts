@@ -27,7 +27,7 @@ export {ResolutionSession} from './resolution-session';
 export {inject, Setter, Getter, Injection, InjectionMetadata} from './inject';
 export {Provider} from './provider';
 
-export {ContextWatcher} from './context-watcher';
+export {ContextWatcher, ContextListener} from './context-watcher';
 
 export {instantiateClass, invokeMethod} from './resolver';
 // internals for testing
