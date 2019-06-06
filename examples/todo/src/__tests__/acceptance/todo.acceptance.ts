@@ -3,24 +3,12 @@
 // This file is licensed under the MIT License.
 // License text available at https://opensource.org/licenses/MIT
 
-import {EntityNotFoundError} from '@loopback/repository';
-import {
-  Client,
-  createRestAppClient,
-  expect,
-  givenHttpServerConfig,
-  toJSON,
-} from '@loopback/testlab';
-import {TodoListApplication} from '../../application';
-import {Todo} from '../../models/';
-import {TodoRepository} from '../../repositories/';
-import {
-  aLocation,
-  getProxiedGeoCoderConfig,
-  givenCachingProxy,
-  givenTodo,
-  HttpCachingProxy,
-} from '../helpers';
+import { EntityNotFoundError } from '@loopback/repository';
+import { Client, createRestAppClient, expect, givenHttpServerConfig, toJSON } from '@loopback/testlab';
+import { TodoListApplication } from '../../application';
+import { Todo } from '../../models/';
+import { TodoRepository } from '../../repositories/';
+import { aLocation, getProxiedGeoCoderConfig, givenCachingProxy, givenTodo, HttpCachingProxy } from '../helpers';
 
 describe('TodoApplication', () => {
   let app: TodoListApplication;
@@ -43,7 +31,7 @@ describe('TodoApplication', () => {
     await todoRepo.deleteAll();
   });
 
-  it('creates a todo', async function() {
+  it('creates a todo', async function () {
     // Set timeout to 30 seconds as `post /todos` triggers geocode look up
     // over the internet and it takes more than 2 seconds
     // eslint-disable-next-line no-invalid-this
@@ -54,25 +42,27 @@ describe('TodoApplication', () => {
       .send(todo)
       .expect(200);
     expect(response.body).to.containDeep(todo);
+    expect(response.body.isComplete).to.equal(false);
     const result = await todoRepo.findById(response.body.id);
     expect(result).to.containDeep(todo);
   });
 
-  it('rejects requests to create a todo with no title', async () => {
+  it('default title set if none provided during create', async () => {
     const todo = givenTodo();
     delete todo.title;
-    await client
+    const response = await client
       .post('/todos')
       .send(todo)
-      .expect(422);
+      .expect(200);
+    expect(response.body.title).to.equal('Default Title');
   });
 
-  it('creates an address-based reminder', async function() {
+  it('creates an address-based reminder', async function () {
     // Increase the timeout to accommodate slow network connections
     // eslint-disable-next-line no-invalid-this
     this.timeout(30000);
 
-    const todo = givenTodo({remindAtAddress: aLocation.address});
+    const todo = givenTodo({ remindAtAddress: aLocation.address });
     const response = await client
       .post('/todos')
       .send(todo)
@@ -140,7 +130,7 @@ describe('TodoApplication', () => {
     it('returns 404 when updating a todo that does not exist', () => {
       return client
         .patch('/todos/99999')
-        .send(givenTodo({isComplete: true}))
+        .send(givenTodo({ isComplete: true }))
         .expect(404);
     });
 
@@ -160,7 +150,7 @@ describe('TodoApplication', () => {
   });
 
   it('queries todos with a filter', async () => {
-    await givenTodoInstance({title: 'wake up', isComplete: true});
+    await givenTodoInstance({ title: 'wake up', isComplete: true });
 
     const todoInProgress = await givenTodoInstance({
       title: 'go to sleep',
@@ -169,7 +159,7 @@ describe('TodoApplication', () => {
 
     await client
       .get('/todos')
-      .query({filter: {where: {isComplete: false}}})
+      .query({ filter: { where: { isComplete: false } } })
       .expect(200, [toJSON(todoInProgress)]);
   });
 
