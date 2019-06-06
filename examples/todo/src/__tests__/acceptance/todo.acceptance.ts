@@ -42,9 +42,18 @@ describe('TodoApplication', () => {
       .send(todo)
       .expect(200);
     expect(response.body).to.containDeep(todo);
-    expect(response.body.isComplete).to.equal(false);
     const result = await todoRepo.findById(response.body.id);
     expect(result).to.containDeep(todo);
+  });
+
+  it('default isComplete set if none provided during create', async () => {
+    const todo = givenTodo();
+    delete todo.isComplete;
+    const response = await client
+      .post('/todos')
+      .send(todo)
+      .expect(200);
+    expect(response.body.isComplete).to.equal(false);
   });
 
   it('default title set if none provided during create', async () => {
